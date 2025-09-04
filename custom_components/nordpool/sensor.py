@@ -25,6 +25,7 @@ from .const import (
     EVENT_NEW_DAY,
     EVENT_NEW_PRICE,
     EVENT_NEW_HOUR,
+    EVENT_NEW_QUARTER,
     SENTINEL,
     RANDOM_MINUTE,
     RANDOM_SECOND,
@@ -444,6 +445,28 @@ class NordpoolSensor(SensorEntity):
         # update attrs for the new day
         await self.handle_new_hr()
 
+    async def handle_new_quarter(self):
+        """Update attrs for the new quarter"""
+        _LOGGER.debug("handle_new_quarter")
+        today = await self._api.today(self._area, self._currency)
+        if today:
+            self._data_today = today
+
+        # now = dt_utils.now()
+        # if self._data_tomorrow is SENTINEL and stock(now) >= stock(now).replace(
+        #     hour=13, minute=RANDOM_MINUTE, second=RANDOM_SECOND
+        # ):
+        #     tomorrow = await self._api.tomorrow(self._area, self._currency)
+        #     if tomorrow:
+        #         self._data_tomorrow = tomorrow
+
+        self._update()
+        # Updates the current for this hour.
+        await self._update_current_price()
+        # This is not to make sure the correct template costs are set. Issue 258
+        self._attr_native_value = self.current_price
+        self.async_write_ha_state()
+
     async def handle_new_hr(self):
         """Update attrs for the new hour"""
         _LOGGER.debug("handle_new_hr")
@@ -484,5 +507,9 @@ class NordpoolSensor(SensorEntity):
         async_dispatcher_connect(
             self._api._hass, EVENT_NEW_PRICE, self.handle_new_price
         )
+        async_dispatcher_connect(
+            self._api._hass, EVENT_NEW_QUARTER, self.handle_new_quarter
+        )
+        await self.handle_new_quarter()
         async_dispatcher_connect(self._api._hass, EVENT_NEW_HOUR, self.handle_new_hr)
         await self.handle_new_hr()

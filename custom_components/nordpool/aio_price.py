@@ -91,12 +91,13 @@ async def join_result_for_correct_time(results, dt):
 class AioPrices:
     """Interface"""
 
-    def __init__(self, currency, client, timeezone=None):
+    def __init__(self, currency, client, resolution=15, timeezone=None):
         # super().__init__(currency)
         self.client = client
         self.timeezone = timeezone
         (self.HOURLY, self.DAILY, self.WEEKLY, self.MONTHLY, self.YEARLY) = (
-            "DayAheadPrices",
+            #            "DayAheadPrices",
+            "DayAheadPriceIndices",
             "AggregatePrices",
             "AggregatePrices",
             "AggregatePrices",
@@ -104,6 +105,7 @@ class AioPrices:
         )
         self.API_URL = "https://dataportal-api.nordpoolgroup.com/api/%s"
         self.currency = currency
+        self.resolution = resolution
 
     async def _io(self, url, **kwargs):
         resp = await self.client.get(url, params=kwargs)
@@ -140,11 +142,11 @@ class AioPrices:
         if not isinstance(areas, list) and areas is not None:
             areas = [i.strip() for i in areas.split(",")]
 
-        _LOGGER.debug("data type in _parser %s, areas %s", data_type, areas)
+        #        _LOGGER.debug("data type in _parser %s, areas %s", data_type, areas)
 
         # Ripped from Kipe's nordpool
         if data_type == self.HOURLY:
-            data_source = ("multiAreaEntries", "entryPerArea")
+            data_source = ("multiIndexEntries", "entryPerArea")
         elif data_type == self.DAILY:
             data_source = ("multiAreaDailyAggregates", "averagePerArea")
         elif data_type == self.WEEKLY:
@@ -170,6 +172,9 @@ class AioPrices:
 
         start_time = None
         end_time = None
+
+        #        _LOGGER.debug("DATA: %s", data)
+
         # multiAreaDailyAggregates
         if len(data[data_source[0]]) > 0:
             start_time = self._parse_dt(data[data_source[0]][0]["deliveryStart"])
@@ -232,8 +237,10 @@ class AioPrices:
 
         kws = {
             "currency": self.currency,
+            "resolutionInMinutes": 15,
             "market": "DayAhead",
             "deliveryArea": ",".join(areas),
+            "indexNames": ",".join(areas),
             # This one is default for hourly..
             "date": end_date.strftime("%Y-%m-%d"),
         }
@@ -309,6 +316,41 @@ class AioPrices:
         """
         Async version of _parse_json to prevent blocking calls inside the event loop.
         """
+
+        # # create test data...
+        # # 15 min data
+        # value = 0.01
+        # for entry in data.get("multiIndexEntries", []):
+        #     if "FI" in entry.get("entryPerArea", {}):
+        #         entry["entryPerArea"]["FI"] = round(value, 2)
+        #         value += 0.01
+        # # 1 min data
+        # # existing_starts = {entry["deliveryStart"]: entry for entry in data.get("multiIndexEntries", [])}
+        # # if data["multiIndexEntries"]:
+        # #     first_time = min(datetime.fromisoformat(e["deliveryStart"].replace("Z", "+00:00")) for e in data["multiIndexEntries"])
+        # # else:
+        # #     first_time = datetime.strptime(data["deliveryDateCET"] + "T00:00:00+00:00", "%Y-%m-%dT%H:%M:%S%z")
+        # # all_entries = []
+        # # value = 0.00
+        # # for i in range(1440):
+        # #     start = first_time + timedelta(minutes=i)
+        # #     end = start + timedelta(minutes=1)
+        # #     start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+        # #     end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")
+        # #     entry = existing_starts.get(start_str)
+        # #     if entry is None:
+        # #         entry = {
+        # #             "deliveryStart": start_str,
+        # #             "deliveryEnd": end_str,
+        # #             "entryPerArea": {"FI": round(value, 2)}
+        # #         }
+        # #     else:
+        # #         entry["entryPerArea"]["FI"] = round(value, 2)
+        # #     all_entries.append(entry)
+        # #     value += 0.01
+        # # data["multiIndexEntries"] = all_entries
+        # # create test data...
+
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None, self._parse_json, data, areas, data_type

@@ -57,7 +57,12 @@ def stock(d):
 
 def start_of(d, typ_="hour"):
     if typ_ == "hour":
-        return d.replace(minute=0, second=0, microsecond=0)
+        # Find closest lower value among 0, 15, 30, 45
+        minute_options = [0, 15, 30, 45]
+        new_minute = max([m for m in minute_options if m <= d.minute], default=0)
+        # _LOGGER.debug(f"start_of: d={d}, new_minute={new_minute}")
+        # Original: return d.replace(minute=0, second=0, microsecond=0)
+        return d.replace(minute=new_minute, second=0, microsecond=0)
     elif typ_ == "day":
         return d.replace(hour=0, minute=0, microsecond=0)
 

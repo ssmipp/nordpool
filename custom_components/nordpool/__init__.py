@@ -24,6 +24,7 @@ from .const import (
     DOMAIN,
     EVENT_NEW_DAY,
     EVENT_NEW_HOUR,
+    EVENT_NEW_QUARTER,
     EVENT_NEW_PRICE,
     _CURRENCY_LIST,
     RANDOM_MINUTE,
@@ -161,6 +162,11 @@ async def _dry_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             _LOGGER.debug("Called new_hr callback")
             async_dispatcher_send(hass, EVENT_NEW_HOUR)
 
+        async def new_quarter(_):
+            """Callback to tell the sensors to update on a new quarter."""
+            _LOGGER.debug("Called new_quarter callback")
+            async_dispatcher_send(hass, EVENT_NEW_QUARTER)
+
         @backoff.on_exception(
             backoff.constant,
             (InvalidValueException),
@@ -193,8 +199,20 @@ async def _dry_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
         cb_new_hr = async_track_time_change(hass, new_hr, minute=0, second=0)
 
+        cb_new_quarter = async_track_time_change(
+            hass,
+            new_quarter,
+            minute=[15, 30, 45],
+            second=0,
+            # hass,
+            # new_quarter,
+            # minute=list(range(2, 60, 1)),
+            # second=0,
+        )
+
         api.listeners.append(cb_update_tomorrow)
         api.listeners.append(cb_new_hr)
+        api.listeners.append(cb_new_quarter)
         api.listeners.append(cb_new_day)
 
     return True
