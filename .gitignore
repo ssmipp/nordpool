@@ -7,12 +7,14 @@ __pycache__/
 *.so
 
 # Dont commit the config folder.
-config/blueprints
-config/deps
-config/home-assistant*
-config/tts
-config/www
-config/.*
+blueprints
+deps
+home-assistant*
+tts
+www
+.cloud
+.storage
+.HA_VERSION
 
 # Distribution / packaging
 .Python
