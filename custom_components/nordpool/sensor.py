@@ -444,6 +444,7 @@ class NordpoolSensor(SensorEntity):
         self._data_tomorrow = None
         # update attrs for the new day
         await self.handle_new_hr()
+        await self.handle_new_quarter()
 
     async def handle_new_quarter(self):
         """Update attrs for the new quarter"""
