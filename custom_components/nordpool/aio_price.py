@@ -318,37 +318,33 @@ class AioPrices:
         """
 
         # # create test data...
-        # # 15 min data
-        # value = 0.01
-        # for entry in data.get("multiIndexEntries", []):
-        #     if "FI" in entry.get("entryPerArea", {}):
-        #         entry["entryPerArea"]["FI"] = round(value, 2)
-        #         value += 0.01
-        # # 1 min data
-        # # existing_starts = {entry["deliveryStart"]: entry for entry in data.get("multiIndexEntries", [])}
-        # # if data["multiIndexEntries"]:
-        # #     first_time = min(datetime.fromisoformat(e["deliveryStart"].replace("Z", "+00:00")) for e in data["multiIndexEntries"])
-        # # else:
-        # #     first_time = datetime.strptime(data["deliveryDateCET"] + "T00:00:00+00:00", "%Y-%m-%dT%H:%M:%S%z")
-        # # all_entries = []
-        # # value = 0.00
-        # # for i in range(1440):
-        # #     start = first_time + timedelta(minutes=i)
-        # #     end = start + timedelta(minutes=1)
-        # #     start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
-        # #     end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")
-        # #     entry = existing_starts.get(start_str)
-        # #     if entry is None:
-        # #         entry = {
-        # #             "deliveryStart": start_str,
-        # #             "deliveryEnd": end_str,
-        # #             "entryPerArea": {"FI": round(value, 2)}
-        # #         }
-        # #     else:
-        # #         entry["entryPerArea"]["FI"] = round(value, 2)
-        # #     all_entries.append(entry)
-        # #     value += 0.01
-        # # data["multiIndexEntries"] = all_entries
+        # if data["multiIndexEntries"]:
+        #     first_time = min(
+        #         datetime.fromisoformat(e["deliveryStart"].replace("Z", "+00:00"))
+        #         for e in data["multiIndexEntries"]
+        #     )
+        # else:
+        #     first_time = datetime.strptime(
+        #         data["deliveryDateCET"] + "T00:00:00+00:00", "%Y-%m-%dT%H:%M:%S%z"
+        #     )
+        # all_entries = []
+        # fi_value = 0.0
+        # for hour in range(24):
+        #     for minute in (0, 15, 30, 45):
+        #         start = first_time.replace(
+        #             hour=hour, minute=minute, second=0, microsecond=0
+        #         )
+        #         end = start + timedelta(minutes=1)
+        #         start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
+        #         end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")
+        #         entry = {
+        #             "deliveryStart": start_str,
+        #             "deliveryEnd": end_str,
+        #             "entryPerArea": {"FI": round(fi_value, 2)},
+        #         }
+        #         all_entries.append(entry)
+        #         fi_value += 0.1
+        # data["multiIndexEntries"] = all_entries
         # # create test data...
 
         loop = asyncio.get_running_loop()
